@@ -1,58 +1,62 @@
 package main;
 
-import sun.audio.AudioDataStream;
 import sun.audio.AudioPlayer;
 import sun.audio.AudioStream;
 
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import java.io.DataInputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketAddress;
+import java.util.ArrayList;
 
 public class Server {
     private ServerSocket server;
-    Server(int port){
+    private ArrayList<User> users = new ArrayList<>();
+    private ArrayList<User> existingUsers = new ArrayList<>();
+    private int numberOfUsers;
+    Server(int port) {
         try {
             server = new ServerSocket(port);
-
-
         } catch (IOException e) {
             e.printStackTrace();
         }
 
     }
-    public void start(){
+    private void start(){
+
         while (true){
+            System.out.println("Waiting on client at " + server.getLocalSocketAddress());
 
             try {
-                System.out.println("Waiting for client at " + server.getLocalPort());
                 Socket client = server.accept();
-                DataInputStream inputStream = new DataInputStream(client.getInputStream());
-                if(inputStream.readUTF().equals("Eat")){
-                    System.out.println("Ready to eat");
+                System.out.println(client.getRemoteSocketAddress());
+                DataInputStream input = new DataInputStream(client.getInputStream());
+                User user = new User(input.readUTF(),client.getLocalSocketAddress());
+                users.add(user);
+                System.out.println(user.name);
 
-                    String sep = System.getProperty("file.separator");
-                    InputStream in = new FileInputStream("C:" + sep+ "Users"+ sep+"birke"+sep+"IdeaProjects" + sep +"SocketWeb" +sep +"Data" +sep +"service-bell_daniel_simion.wav");
-                    AudioStream as = new AudioStream(in);
-                    AudioPlayer.player.start(as);
-
-                }
-
-                client.close();
-            } catch (Exception e) {
+            } catch (IOException e) {
                 e.printStackTrace();
-                break;
             }
         }
-
     }
+    private void init(){
+        try {
+            FileInputStream fis = new FileInputStream(System.getProperty("user.home") + System.getProperty("file.separator") + "NetworkServerData" +System.getProperty("file.separator") + "Data.txt");
+            DataInputStream dataInputStream = new DataInputStream(fis);
+            numberOfUsers= dataInputStream.readInt();
+            for(int i = 0; i < numberOfUsers; i++){
+                //existingUsers.add(new User(dataInputStream.readUTF(),dataInputStream.readUTF()));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void main(String[] args){
-        Server s = new Server(1337);
-        s.start();
+        Server server = new Server(1337);
+        server.start();
+
+
     }
 }

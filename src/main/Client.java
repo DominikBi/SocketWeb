@@ -2,13 +2,11 @@ package main;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.io.DataInputStream;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.Socket;
-import java.util.Map;
 
 public class Client {
     public static void main(String[] args){
@@ -21,24 +19,25 @@ public class Client {
     private void start(){
         JFrame frame = new JFrame();
         JPanel panel = new JPanel();
-        JButton callToEat = new JButton("Dinner is ready");
+        JTextField textField = new JTextField();
+        JButton button = new JButton("Apply");
+        textField.setPreferredSize(new Dimension(200,100));
+        panel.add(textField);
+        panel.add(button);
         frame.add(panel);
-        frame.setSize(Toolkit.getDefaultToolkit().getScreenSize().width/2,Toolkit.getDefaultToolkit().getScreenSize().height/2);
-        frame.setLocation(Toolkit.getDefaultToolkit().getScreenSize().width/2-frame.getWidth()/2,Toolkit.getDefaultToolkit().getScreenSize().height/2 - frame.getHeight()/2);
-        callToEat.setPreferredSize(new Dimension(frame.getWidth()/3,frame.getHeight()/3));
-        callToEat.setLocation(frame.getX()-frame.getHeight()/2,frame.getY()-frame.getHeight()/2);
-
-        panel.add(callToEat);
-        frame.setVisible(true);
-        callToEat.addActionListener(e -> {
+        button.addActionListener(e -> {
             try {
-                Socket client = new Socket("localhost", 1337);
-                DataOutputStream outputStream = new DataOutputStream(client.getOutputStream());
-                outputStream.writeUTF("Eat");
-                client.close();
-            } catch (IOException e1) {
+                Socket socket = new Socket("localhost", 1337);
+                DataOutputStream output = new DataOutputStream(socket.getOutputStream());
+                System.out.println(textField.getText());
+                output.writeUTF(textField.getText());
+            }catch (IOException e1) {
                 e1.printStackTrace();
             }
         });
+        frame.setSize(Toolkit.getDefaultToolkit().getScreenSize());
+        frame.setVisible(true);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
     }
 }
