@@ -10,7 +10,8 @@ public class Server {
     private ArrayList<User> onlineUsers = new ArrayList<>();
     private ArrayList<User> existingUsers = new ArrayList<>();
     private ArrayList<User> bannedUsers = new ArrayList<>();
-    private int numberOfUsers;
+    private int numberOfUsersBanned;
+    private int numberOfUsersRegistered;
     Server(int port) {
         try {
             server = new ServerSocket(port);
@@ -35,8 +36,8 @@ public class Server {
                 } else {
                     System.out.println("Should " + user.name +" be able to connect?(Y/N)");
                     Scanner sc = new Scanner(System.in);
-                    String awnser = sc.next();
-                    if(awnser.equals("Y")){
+                    String answer = sc.next();
+                    if(answer.equals("Y")){
                         onlineUsers.add(user);
                         output.writeInt(102);
                     }else{
@@ -56,11 +57,24 @@ public class Server {
     }
     private void init(){
         try {
-            FileInputStream fis = new FileInputStream(System.getProperty("user.home") + System.getProperty("file.separator") + "NetworkServerData" +System.getProperty("file.separator") + "Data.txt");
-            DataInputStream dataInputStream = new DataInputStream(fis);
-            numberOfUsers= dataInputStream.readInt();
-            for(int i = 0; i < numberOfUsers; i++){
-                existingUsers.add(new User(dataInputStream.readUTF(),new Socket("localhost",dataInputStream.readInt())));
+            String sep = System.getProperty("file.separator");
+            String mainPath = System.getProperty("user.home") + sep +"ServerData" + sep;
+
+            try(DataInputStream inputBanned = new DataInputStream(new FileInputStream(mainPath + "bannedUsers"))) {
+                numberOfUsersBanned = inputBanned.readInt();
+                for (int i = 0; i < numberOfUsersBanned; i++) {
+                    User user = new User(inputBanned.readUTF(), new Socket("localhost", inputBanned.readInt()));
+                    inputBanned.readUTF();
+                    bannedUsers.add(user);
+                }
+            }
+            try(DataInputStream inputRegistered = new DataInputStream(new FileInputStream(mainPath + "registeredUsers"))){
+                numberOfUsersRegistered = inputRegistered.readInt();
+                for(int i = 0; i < numberOfUsersRegistered;i++){
+                    User user = new User(inputRegistered.readUTF(),new Socket("localhost", inputRegistered.readInt()));
+                    inputRegistered.readUTF();
+                    existingUsers.add(user);
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -70,15 +84,19 @@ public class Server {
         String sep = System.getProperty("file.separator");
         String mainPath = System.getProperty("user.home") + sep +"ServerData" + sep;
         String enter = System.getProperty("line.separator");
+        int numberBanned = bannedUsers.size();
+        int numberRegistered = existingUsers.size();
         File banned = new File(mainPath + "bannedUsers");
         File registered = new File(mainPath + "registeredUsers");
         try(DataOutputStream inputBanned = new DataOutputStream(new FileOutputStream(banned))){
+            inputBanned.writeInt(numberBanned);
             for(User bannedUser : bannedUsers){
                 inputBanned.writeUTF(bannedUser.name);
                 inputBanned.writeInt(bannedUser.address.getPort());
                 inputBanned.writeUTF(enter);
             }
         try (DataOutputStream outputRegistered = new DataOutputStream(new FileOutputStream(registered))){
+            outputRegistered.writeInt(numberRegistered);
             for(User registeredUser : existingUsers){
                 outputRegistered.writeUTF(registeredUser.name);
                 outputRegistered.writeInt(registeredUser.address.getPort());
@@ -95,6 +113,7 @@ public class Server {
     public static void main(String[] args){
         Server server = new Server(1337);
         server.start();
+        server.init();
 
 
     }

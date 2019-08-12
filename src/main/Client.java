@@ -2,8 +2,6 @@ package main;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -18,6 +16,16 @@ public class Client{
     }
 
     private void start() {
+        String s = "Song of Napalm, by Bruce Weigl targetes the cruelty of the use of Napalm in the Vietnam war. In the poem, the poet explores the view of a military commander on the battlefield and the view of innocent residents getting struck by Napalm. In the poem the poet describes that he doesn't want to fight in the war but has to for his own survival. Weigl expresses the situation on the battlefield through metaphors and auditory imagery.";
+        System.out.println(s.split(" ").length);
+        int i = 0;
+        while(i < 10){
+            i = i +1;
+
+        }
+        for(int e = 0; e<10; e++){
+
+        }
         JFrame frame = new JFrame();
         JPanel panel = new JPanel();
         JTextField waitingTextField = new JTextField();
